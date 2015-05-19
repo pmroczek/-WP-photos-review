@@ -1,15 +1,32 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Windows.Devices.Geolocation;
 
-namespace FlirckrMobileApp
+namespace FlirckrMobileApp.Helpers
 {
 	public class LocalizationManager
 	{
 		private Geolocator _geolocator;
+
+		public static Geopoint DefaultLocation
+		{
+			get
+			{
+				return new Geopoint(new BasicGeoposition()
+				{
+					Latitude = 54.338989,
+					Longitude = 18.653728
+				});
+			}
+		}
+
+		public static double DefaultZoom
+		{
+			get
+			{
+				return 11;
+			}
+		}
 
 		public LocalizationManager()
 		{

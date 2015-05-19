@@ -21,6 +21,7 @@ using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 using Newtonsoft.Json;
 using System.ComponentModel;
+using Windows.UI.Xaml.Controls.Maps;
 using FlirckrMobileApp.Model;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=391641
@@ -47,6 +48,16 @@ namespace FlirckrMobileApp
 		/// This parameter is typically used to configure the page.</param>
 		protected override void OnNavigatedTo(NavigationEventArgs e)
 		{
+		}
+
+		private void MapControl_OnCenterChanged(MapControl sender, object args)
+		{
+			//MapControl.ZoomLevel = 12;
+		}
+
+		private void FavoriteButton_OnClick(object sender, RoutedEventArgs e)
+		{
+			
 		}
 	}
 }

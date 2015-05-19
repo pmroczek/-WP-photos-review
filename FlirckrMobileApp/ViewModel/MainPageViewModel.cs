@@ -5,9 +5,15 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Windows.Devices.Geolocation;
+using Windows.Media.Devices;
+using Windows.System.Threading;
 using Windows.UI.Popups;
+using Windows.UI.ViewManagement;
+using Windows.UI.Xaml;
 using FlirckrMobileApp.Common;
+using FlirckrMobileApp.Helpers;
 using FlirckrMobileApp.Model;
 using Newtonsoft.Json;
 
@@ -17,48 +23,70 @@ namespace FlirckrMobileApp.ViewModel
 	{
 		private readonly LocalizationManager _localizationManager;
 		private Geopoint _centerPoint;
-		private string _status;
+		private double _zoom;
 		private string _point;
+		private int _radius;
+		private string _status;
 
 		public ObservableCollection<Photo> Photos { get; private set; }
 
+		public ObservableCollection<Photo> FavoritePhotos { get; private set; }
+
 		public MainPageViewModel()
 		{
+			//Zoom = LocalizationManager.DefaultZoom;
 			Status = "Start";
 			_localizationManager = new LocalizationManager();
 			Photos = new ObservableCollection<Photo>();
-			SetGeoPoint();
+			InitializeMapAndPhoto();
+
 		}
 
-		private async void SetGeoPoint()
+		private async void InitializeMapAndPhoto()
+		{
+			//Center = LocalizationManager.DefaultLocation;
+			Radius = 1;
+			await GetGeoLocation();
+			GetPhotos();
+		}
+
+		private async Task GetGeoLocation()
 		{
 			Center = await _localizationManager.GetActualPoint();
-			HttpClient client = new HttpClient();
-			string url = string.Format(PreparedString.GetPhotosInformationUrl, PreparedString.ApiKey, Center.Position.Latitude,
-				Center.Position.Longitude, 10);
+			//Zoom = 14;
+			//GetPhotos();
+		}
 
-			var response = await client.GetStringAsync(url);
-			response = response.Replace(PreparedString.ResponsePrefix, string.Empty);
-			response = response.Remove(response.Length - 1);
+		private async void GetPhotos()
+		{
+			ClearCollection();
 
-			FlickrMain flickrMain = JsonConvert.DeserializeObject<FlickrMain>(response);
+			var flickrMain =
+				await HttpClientManager.GetPhotosByGeolocation(Center.Position.Latitude, Center.Position.Longitude, Radius);
 
 			if (flickrMain.Stat == PreparedString.ValidStat)
 			{
 				Status = "Connection with server successful";
+
 				foreach (var photo in flickrMain.Photos.Photo)
 				{
-					string photoUrl = string.Format(PreparedString.GetPhotoFromServerUrl, photo.Farm, photo.Server, photo.Id,
-						photo.Secret);
-					photo.PhotoUrl = new Uri(photoUrl);
-
+					photo.PhotoUrl = await HttpClientManager.GetPhotoUrl(photo);
 					Photos.Add(photo);
-					Status = "Photos in conllection == " + Photos.Count;
 				}
+
+				Status = "Photos in conllection == " + Photos.Count;
 			}
 			else
+				Status = "Server connection error";
+		}
+
+		private void ClearCollection()
+		{
 			{
-				Status = "Cant get data from serwer";
+				while (Photos.Count > 0)
+				{
+					Photos.RemoveAt(Photos.Count - 1);
+				}
 			}
 		}
 
@@ -66,7 +94,6 @@ namespace FlirckrMobileApp.ViewModel
 		{
 			get
 			{
-
 				if (_centerPoint == null)
 					Status = "Setting geo location";
 				else
@@ -81,6 +108,16 @@ namespace FlirckrMobileApp.ViewModel
 				Point = value.Position.Latitude + " - " + value.Position.Longitude;
 
 				NotifyPropertyChanged("Center");
+			}
+		}
+
+		public double Zoom
+		{
+			get { return _zoom; }
+			set
+			{
+				_zoom = value;
+				NotifyPropertyChanged("Zoom");
 			}
 		}
 
@@ -101,6 +138,17 @@ namespace FlirckrMobileApp.ViewModel
 			{
 				_point = value;
 				NotifyPropertyChanged("Point");
+			}
+		}
+
+		public int Radius
+		{
+			get { return _radius; }
+			set
+			{
+				_radius = value / 10;
+				GetPhotos();
+				NotifyPropertyChanged("Radius");
 			}
 		}
 	}
