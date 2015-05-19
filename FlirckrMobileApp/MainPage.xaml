@@ -21,15 +21,14 @@
 						<RowDefinition Height="*"/>
 						<RowDefinition Height="50"/>
 					</Grid.RowDefinitions>
-
 					<Slider Value="{Binding Radius, Mode=TwoWay}" StepFrequency="10" Header="{Binding  Path=Radius, Converter={StaticResource ResourceKey=StringFormat}, ConverterParameter='Radius search {0} km'}" />
 					<Maps:MapControl x:Name="MapControl" Grid.Row="1" Center="{Binding Center, Mode=TwoWay}" ZoomLevel="11" />
-					<!--<TextBox x:Name="Coordinates" Text="{Binding Status}" Grid.Row="2"/>-->
+					<Button x:Name="RefreshLocation" Content="Reset my location" Click="RefreshLocation_OnClick" Grid.Row="2" HorizontalAlignment="Center"></Button>
 				</Grid>
 			</PivotItem>
 			<PivotItem Header="Photos">
 				<Grid>
-					<ListBox x:Name="Images" ItemsSource="{Binding Photos}">
+					<ListBox x:Name="Images" ItemsSource="{Binding Photos}" Background="Transparent">
 						<ListBox.ItemTemplate>
 							<DataTemplate>
 								<Grid>
@@ -43,27 +42,25 @@
 										<RowDefinition Height="*"/>
 									</Grid.RowDefinitions>
 									<Image Source="{Binding PhotoUrl}" Grid.Column="0" Grid.RowSpan="3"/>
-									<TextBlock Text="{Binding Title}" Grid.Column="1" Grid.Row="1"/>
-									<Button Content="Favorite" x:Name="FavoriteButton" Click="FavoriteButton_OnClick" Grid.Row="2"></Button>
-									<!--<TextBlock Text="{Binding Id}" Grid.Column="1"/>-->
+									<AppBarButton Label="Favorite" Click="FavoriteButton_OnClick" Grid.Column="0" VerticalAlignment="Top" Grid.Row="0" CommandParameter="{Binding Path=PhotoUrl}" Icon="OutlineStar"/>
+									<TextBlock Text="{Binding Title}" Foreground="White" Grid.Column="0" VerticalAlignment="Bottom" Grid.Row="2"/>
 								</Grid>
 							</DataTemplate>
 						</ListBox.ItemTemplate>
 					</ListBox>
 				</Grid>
 			</PivotItem>
-			<PivotItem Header="Selected photo">
+			<PivotItem Header="Your favorite photos">
 				<Grid>
-					<ListBox x:Name="Favorite" ItemsSource="{Binding FavoritePhotos}">
+					<ListBox x:Name="Favorite" ItemsSource="{Binding FavoritePhotos}"  Background="Transparent">
 						<ListBox.ItemTemplate>
 							<DataTemplate>
 								<Grid>
 									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="2*"/>
 										<ColumnDefinition Width="*"/>
 									</Grid.ColumnDefinitions>
 									<Image Source="{Binding PhotoUrl}" Grid.Column="0"/>
-									<TextBlock Text="{Binding Title}" Grid.Column="1"/>
+									<AppBarButton Label="Delete" Click="DeleteFavoriteButton_OnClick" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Row="0" CommandParameter="{Binding Path=PhotoUrl}" Icon="Clear"/>
 								</Grid>
 							</DataTemplate>
 						</ListBox.ItemTemplate>

@@ -82,6 +82,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\DelegateCommand.cs" />
     <Compile Include="Helpers\HttpClientManager.cs" />
     <Compile Include="Helpers\LocalizationManager.cs" />
     <Compile Include="Helpers\StringFormatConverter.cs" />

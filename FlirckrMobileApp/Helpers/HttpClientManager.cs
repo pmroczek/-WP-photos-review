@@ -15,7 +15,6 @@ namespace FlirckrMobileApp.Helpers
 
 		#endregion
 
-
 		#region Properties
 
 		public static HttpClient Client
@@ -40,13 +39,18 @@ namespace FlirckrMobileApp.Helpers
 			}
 		}
 
-		public static async Task<Uri> GetPhotoUrl(Photo photo)
+		public static Uri GetPhotoUrl(Photo photo)
 		{
 			return new Uri(string.Format(PreparedString.GetPhotoFromServerUrl, photo.Farm, photo.Server, photo.Id, photo.Secret));
 		}
 
-		#endregion
+		//public static Photo GetPhotoByUrl(string photoUrl)
+		//{
+		//	//var response = Client.GetStringAsync(photoUrl);
 
+		//}
+
+		#endregion
 
 		#region Private methods
 
@@ -69,6 +73,5 @@ namespace FlirckrMobileApp.Helpers
 		}
 
 		#endregion
-
 	}
 }

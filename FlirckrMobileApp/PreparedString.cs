@@ -9,6 +9,7 @@ namespace FlirckrMobileApp
 	public class PreparedString
 	{
 		public const string ApiKey = "9e887b1d59c64092d64803918b9db6e4";
+
 		public const string GetPhotosInformationUrl = "https://api.flickr.com/services/rest/" +
 						 "?method=flickr.photos.search" +
 						 "&api_key={0}" +
@@ -22,6 +23,7 @@ namespace FlirckrMobileApp
 		public const string ResponsePrefix = "jsonFlickrApi(";
 
 		public const string ValidStat = "ok";
+
 		public const string InvalidStat = "fail";
 	}
 }

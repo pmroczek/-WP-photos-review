@@ -50,14 +50,23 @@ namespace FlirckrMobileApp
 		{
 		}
 
-		private void MapControl_OnCenterChanged(MapControl sender, object args)
-		{
-			//MapControl.ZoomLevel = 12;
-		}
-
 		private void FavoriteButton_OnClick(object sender, RoutedEventArgs e)
 		{
-			
+			Button button = sender as Button;
+			if (button != null && button.CommandParameter is Uri)
+				App.MainPageViewModel.AddFavorite(button.CommandParameter as Uri);
+		}
+
+		private void RefreshLocation_OnClick(object sender, RoutedEventArgs e)
+		{
+			App.MainPageViewModel.InitializeMapAndPhoto();
+		}
+
+		private void DeleteFavoriteButton_OnClick(object sender, RoutedEventArgs e)
+		{
+			Button button = sender as Button;
+			if (button != null && button.CommandParameter is Uri)
+				App.MainPageViewModel.DeleteFavorite(button.CommandParameter as Uri);
 		}
 	}
 }
