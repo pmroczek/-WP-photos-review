@@ -22,214 +22,195 @@ using Newtonsoft.Json;
 
 namespace FlirckrMobileApp.ViewModel
 {
-	public class MainPageViewModel : BaseNotify
-	{
-		#region Fields
+    public class MainPageViewModel : BaseNotify
+    {
+        #region Fields
 
-		private readonly LocalizationManager _localizationManager;
-		private Geopoint _centerPoint;
-		//private double _zoom;
-		//private string _point;
-		private int _pivotIndex;
-		private int _radius;
-		private string _status;
+        private readonly LocalizationManager _localizationManager;
+        private Geopoint _centerPoint;
+        private int _pivotIndex;
+        private int _radius;
+        private string _status;
 
-		#endregion
+        #endregion
 
-		#region Properties
+        #region Properties
 
-		public ObservableCollection<Photo> Photos { get; private set; }
+        public ObservableCollection<Photo> Photos { get; private set; }
 
-		public ObservableCollection<Photo> FavoritePhotos { get; private set; }
+        public ObservableCollection<Photo> FavoritePhotos { get; private set; }
 
-		public int PivotIndex
-		{
-			get { return _pivotIndex; }
-			set
-			{
-				_pivotIndex = value;
-				NotifyPropertyChanged("PivotIndex");
-			}
-		}
+        public int PivotIndex
+        {
+            get { return _pivotIndex; }
+            set
+            {
+                _pivotIndex = value;
+                NotifyPropertyChanged("PivotIndex");
+            }
+        }
 
-		public Geopoint Center
-		{
-			get
-			{
-				if (_centerPoint == null)
-					Status = "Setting geo location";
-				else
-					Status = "Localization found";
+        public Geopoint Center
+        {
+            get
+            {
+                if (_centerPoint == null)
+                    Status = "Setting geo location";
+                else
+                    Status = "Localization found";
 
-				return _centerPoint;
-			}
-			set
-			{
-				_centerPoint = value;
-				NotifyPropertyChanged("Center");
-			}
-		}
+                return _centerPoint;
+            }
+            set
+            {
+                _centerPoint = value;
+                NotifyPropertyChanged("Center");
+            }
+        }
 
-		public string Status
-		{
-			get { return _status; }
-			set
-			{
-				_status = value;
-				NotifyPropertyChanged("Status");
-			}
-		}
+        public string Status
+        {
+            get { return _status; }
+            set
+            {
+                _status = value;
+                NotifyPropertyChanged("Status");
+            }
+        }
 
-		public int Radius
-		{
-			get { return _radius; }
-			set
-			{
-				_radius = value / 10;
+        public int Radius
+        {
+            get { return _radius; }
+            set
+            {
+                _radius = value / 10;
 
-				if (_centerPoint != null)
-					GetPhotos();
+                if (_centerPoint != null)
+                    GetPhotos();
 
-				NotifyPropertyChanged("Radius");
-			}
-		}
+                NotifyPropertyChanged("Radius");
+            }
+        }
 
-		#endregion
+        #endregion
 
-		#region Contructor
+        #region Contructor
 
-		public MainPageViewModel()
-		{
-			//Zoom = LocalizationManager.DefaultZoom;
-			Status = "Search location...";
-			_localizationManager = new LocalizationManager();
-			Photos = new ObservableCollection<Photo>();
-			FavoritePhotos = new ObservableCollection<Photo>();
-			InitializeMapAndPhoto();
-		}
+        public MainPageViewModel()
+        {
+            Status = "Search location...";
+            _localizationManager = new LocalizationManager();
+            Photos = new ObservableCollection<Photo>();
+            FavoritePhotos = new ObservableCollection<Photo>();
+            InitializeMapAndPhoto();
+        }
 
-		#endregion
+        #endregion
 
-		#region Public methods
+        #region Public methods
 
-		public async void InitializeMapAndPhoto()
-		{
-			//Center = LocalizationManager.DefaultLocation;
-			Radius = 1;
-			await GetGeoLocation();
-			Status = "Faund location.";
-			GetPhotos();
-		}
+        public async void InitializeMapAndPhoto()
+        {
+            await GetGeoLocation();
+            Status = "Found location.";
+            GetPhotos();
+        }
 
-		public void AddFavorite(Uri photoUri)
-		{
-			var photo = Photos.FirstOrDefault(c => c.PhotoUrl == photoUri);
-			if (photo != null)
-			{
-				FavoritePhotos.Add(photo);
-				SavePhotoInIsolatedStorage(photo);
-			}
-		}
+        public void AddFavorite(Uri photoUri)
+        {
+            var photo = Photos.FirstOrDefault(c => c.PhotoUrl == photoUri);
+            if (photo != null)
+            {
+                FavoritePhotos.Add(photo);
+                SavePhotoInIsolatedStorage(photo);
+            }
+        }
 
-		public void DeleteFavorite(Uri uri)
-		{
-			var photo = FavoritePhotos.FirstOrDefault(c => c.PhotoUrl == uri);
+        public void DeleteFavorite(Uri uri)
+        {
+            var photo = FavoritePhotos.FirstOrDefault(c => c.PhotoUrl == uri);
 
-			if (photo != null)
-			{
-				FavoritePhotos.Remove(photo);
-				RemovePhotoFormIsolatedStorage(photo);
-			}
-		}
+            if (photo != null)
+            {
+                FavoritePhotos.Remove(photo);
+                RemovePhotoFormIsolatedStorage(photo);
+            }
+        }
 
-		#endregion
+        #endregion
 
-		#region Privete methods
+        #region Privete methods
 
-		private async Task GetGeoLocation()
-		{
-			Center = await _localizationManager.GetActualPoint();
-			//Zoom = 14;
-			//GetPhotos();
-		}
+        private async Task GetGeoLocation()
+        {
+            Center = await _localizationManager.GetActualPoint();
+        }
 
-		private async void GetPhotos()
-		{
-			ClearCollection();
+        public async void GetPhotos()
+        {
+            ClearCollection(Photos);
 
-			var flickrMain =
-				await HttpClientManager.GetPhotosByGeolocation(Center.Position.Latitude, Center.Position.Longitude, Radius);
+            var flickrMain =
+                await HttpClientManager.GetPhotosByGeolocation(Center.Position.Latitude, Center.Position.Longitude, Radius);
 
-			if (flickrMain.Stat == PreparedString.ValidStat)
-			{
-				foreach (var photo in flickrMain.Photos.Photo)
-				{
-					photo.PhotoUrl = HttpClientManager.GetPhotoUrl(photo);
-					Photos.Add(photo);
-					PivotIndex = 1;
-				}
-			}
-			else
-			{
-				Status = "Error while getting photos. Try again later.";
-				PivotIndex = 2;
-			}
-		}
+            if (flickrMain.Stat == PreparedString.ValidStat)
+            {
+                foreach (var photo in flickrMain.Photos.Photo)
+                {
+                    photo.PhotoUrl = HttpClientManager.GetPhotoUrl(photo);
+                    Photos.Add(photo);
+                }
+                PivotIndex = 1;
+                Status = string.Format("Found {0} photos", Photos.Count);
+            }
+            else
+            {
+                Status = "Error while getting photos. Try again later.";
+                PivotIndex = 2;
+            }
+        }
 
 
-		private static void SavePhotoInIsolatedStorage(Photo photo)
-		{
-			ApplicationDataContainer settings = ApplicationData.Current.LocalSettings;
-			string key = photo.Id;
-			settings.Values[key] = photo.PhotoUrl.OriginalString;
-		}
+        private static void SavePhotoInIsolatedStorage(Photo photo)
+        {
+            ApplicationDataContainer settings = ApplicationData.Current.LocalSettings;
+            string key = photo.Id;
+            settings.Values[key] = photo.PhotoUrl.OriginalString;
+        }
 
-		public void ReadPhotosFromIsolatedStorage()
-		{
-			//ClearFavoriteCollection();
-			ApplicationDataContainer settings = ApplicationData.Current.LocalSettings;
-			if (!settings.Values.Any()) return;
-			{
-				foreach (var photo in settings.Values)
-				{
-					FavoritePhotos.Add(new Photo()
-					{
-						Id = photo.Key,
-						PhotoUrl = new Uri(photo.Value.ToString())
-					});
-				}
-			}
-		}
+        public void ReadPhotosFromIsolatedStorage()
+        {
+            ApplicationDataContainer settings = ApplicationData.Current.LocalSettings;
+            if (!settings.Values.Any()) return;
+            {
+                foreach (var photo in settings.Values)
+                {
+                    FavoritePhotos.Add(new Photo()
+                    {
+                        Id = photo.Key,
+                        PhotoUrl = new Uri(photo.Value.ToString())
+                    });
+                }
+            }
+        }
 
-		private static void RemovePhotoFormIsolatedStorage(Photo photo)
-		{
-			ApplicationDataContainer settings = ApplicationData.Current.LocalSettings;
-			if (settings.Values.ContainsKey(photo.Id))
-				settings.Values.Remove(photo.Id);
-		}
+        private static void RemovePhotoFormIsolatedStorage(Photo photo)
+        {
+            ApplicationDataContainer settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.ContainsKey(photo.Id))
+                settings.Values.Remove(photo.Id);
+        }
 
+        private void ClearCollection(ObservableCollection<Photo> list)
+        {
+            {
+                while (list.Count > 0)
+                {
+                    list.RemoveAt(Photos.Count - 1);
+                }
+            }
+        }
 
-
-		private void ClearCollection()
-		{
-			{
-				while (Photos.Count > 0)
-				{
-					Photos.RemoveAt(Photos.Count - 1);
-				}
-			}
-		}
-
-		private void ClearFavoriteCollection()
-		{
-			{
-				while (FavoritePhotos.Count > 0)
-				{
-					FavoritePhotos.RemoveAt(Photos.Count - 1);
-				}
-			}
-		}
-
-		#endregion
-	}
+        #endregion
+    }
 }

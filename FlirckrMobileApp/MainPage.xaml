@@ -9,66 +9,68 @@
 	xmlns:helpers="using:FlirckrMobileApp.Helpers"
 	mc:Ignorable="d"
 	Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-	<Page.Resources>
-		<helpers:StringFormatConverter x:Name="StringFormat"/>
-	</Page.Resources>
-	<Grid d:DataContext="{d:DesignInstance viewModel:MainPageViewModel}">
-		<Pivot Title="Near to you photos" SelectedIndex="{Binding PivotIndex}">
-			<PivotItem Header="Your location">
-				<Grid>
-					<Grid.RowDefinitions>
-						<RowDefinition Height="75"/>
-						<RowDefinition Height="75"/>
-						<RowDefinition Height="*"/>
-						<RowDefinition Height="75"/>
-					</Grid.RowDefinitions>
-					<TextBlock Text="{Binding Status}"></TextBlock>
-					<Slider Value="{Binding Radius, Mode=TwoWay}" Grid.Row="1" StepFrequency="10" Header="{Binding  Path=Radius, Converter={StaticResource ResourceKey=StringFormat}, ConverterParameter='Radius search {0} km'}" />
-					<Maps:MapControl x:Name="MapControl" Grid.Row="2" Center="{Binding Center, Mode=TwoWay}" ZoomLevel="10" LandmarksVisible="True" />
-					<AppBarButton Label="Get my location" Click="RefreshLocation_OnClick" Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Top" Icon="Map"/>
-				</Grid>
-			</PivotItem>
-			<PivotItem Header="Photos">
-				<Grid>
-					<ListBox x:Name="Images" ItemsSource="{Binding Photos}" Background="Transparent">
-						<ListBox.ItemTemplate>
-							<DataTemplate>
-								<Grid>
-									<Grid.ColumnDefinitions>
-										<!--<ColumnDefinition Width="2*"/>-->
-										<ColumnDefinition Width="*"/>
-									</Grid.ColumnDefinitions>
-									<Grid.RowDefinitions>
-										<RowDefinition Height="*"/>
-										<RowDefinition Height="*"/>
-										<RowDefinition Height="*"/>
-									</Grid.RowDefinitions>
-									<Image Source="{Binding PhotoUrl}" Grid.Column="0" Grid.RowSpan="3"/>
-									<AppBarButton Label="Favorite" Click="FavoriteButton_OnClick" Grid.Column="0" VerticalAlignment="Top" Grid.Row="0" CommandParameter="{Binding Path=PhotoUrl}" Icon="OutlineStar"/>
-									<TextBlock Text="{Binding Title}" Foreground="White" Grid.Column="0" VerticalAlignment="Bottom" Grid.Row="2"/>
-								</Grid>
-							</DataTemplate>
-						</ListBox.ItemTemplate>
-					</ListBox>
-				</Grid>
-			</PivotItem>
-			<PivotItem Header="Your favorite photos">
-				<Grid>
-					<ListBox x:Name="Favorite" ItemsSource="{Binding FavoritePhotos}"  Background="Transparent">
-						<ListBox.ItemTemplate>
-							<DataTemplate>
-								<Grid>
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="*"/>
-									</Grid.ColumnDefinitions>
-									<Image Source="{Binding PhotoUrl}" Grid.Column="0"/>
-									<AppBarButton Label="Delete" Click="DeleteFavoriteButton_OnClick" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Row="0" CommandParameter="{Binding Path=PhotoUrl}" Icon="Clear"/>
-								</Grid>
-							</DataTemplate>
-						</ListBox.ItemTemplate>
-					</ListBox>
-				</Grid>
-			</PivotItem>
-		</Pivot>
-	</Grid>
+    <Page.Resources>
+        <helpers:StringFormatConverter x:Name="StringFormat"/>
+    </Page.Resources>
+    <Grid d:DataContext="{d:DesignInstance viewModel:MainPageViewModel}">
+        <Pivot Title="Pictures around you" SelectedIndex="{Binding PivotIndex}">
+            <PivotItem Header="Your location">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition Height="75"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="75"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="{Binding Status}"></TextBlock>
+                    <Slider Value="{Binding Radius, Mode=TwoWay}" Grid.Row="1" StepFrequency="10" Header="{Binding  Path=Radius, Converter={StaticResource ResourceKey=StringFormat}, ConverterParameter='Radius search {0} km'}" />
+                    <Maps:MapControl x:Name="MapControl" Grid.Row="2" Center="{Binding Center, Mode=TwoWay}" ZoomLevel="10" LandmarksVisible="True" TrafficFlowVisible="True">
+                    </Maps:MapControl>
+                    <AppBarButton Label="Get my location" Click="RefreshLocation_OnClick" Grid.Row="3" HorizontalAlignment="Right" VerticalAlignment="Top" Icon="Map"/>
+                    <AppBarButton Label="Photos here" x:Name="BtnPhotosPlace" Click="BtnPhotosPlace_OnClick" Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Top" Icon="Find"/>
+                </Grid>
+            </PivotItem>
+            <PivotItem Header="Photos">
+                <Grid>
+                    <ListBox x:Name="Images" ItemsSource="{Binding Photos}" Background="Transparent">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <!--<ColumnDefinition Width="2*"/>-->
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <Image Source="{Binding PhotoUrl}" Grid.Column="0" Grid.RowSpan="3"/>
+                                    <AppBarButton Label="Favorite" Click="FavoriteButton_OnClick" Grid.Column="0" VerticalAlignment="Top" Grid.Row="0" CommandParameter="{Binding Path=PhotoUrl}" Icon="OutlineStar"/>
+                                    <TextBlock Text="{Binding Title}" Foreground="White" Grid.Column="0" VerticalAlignment="Bottom" Grid.Row="2"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </PivotItem>
+            <PivotItem Header="Your favorite photos">
+                <Grid>
+                    <ListBox x:Name="Favorite" ItemsSource="{Binding FavoritePhotos}"  Background="Transparent">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Image Source="{Binding PhotoUrl}" Grid.Column="0"/>
+                                    <AppBarButton Label="Delete" Click="DeleteFavoriteButton_OnClick" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Row="0" CommandParameter="{Binding Path=PhotoUrl}" Icon="Clear"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </PivotItem>
+        </Pivot>
+    </Grid>
 </Page>

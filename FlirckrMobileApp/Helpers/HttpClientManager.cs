@@ -44,12 +44,6 @@ namespace FlirckrMobileApp.Helpers
 			return new Uri(string.Format(PreparedString.GetPhotoFromServerUrl, photo.Farm, photo.Server, photo.Id, photo.Secret));
 		}
 
-		//public static Photo GetPhotoByUrl(string photoUrl)
-		//{
-		//	//var response = Client.GetStringAsync(photoUrl);
-
-		//}
-
 		#endregion
 
 		#region Private methods
