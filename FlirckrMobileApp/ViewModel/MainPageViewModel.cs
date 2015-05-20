@@ -24,47 +24,127 @@ namespace FlirckrMobileApp.ViewModel
 {
 	public class MainPageViewModel : BaseNotify
 	{
+		#region Fields
+
 		private readonly LocalizationManager _localizationManager;
 		private Geopoint _centerPoint;
 		//private double _zoom;
 		//private string _point;
+		private int _pivotIndex;
 		private int _radius;
 		private string _status;
+
+		#endregion
+
+		#region Properties
 
 		public ObservableCollection<Photo> Photos { get; private set; }
 
 		public ObservableCollection<Photo> FavoritePhotos { get; private set; }
 
-		//public DelegateCommand<ItemClickEventArgs> ItemClickedCommand { get; set; }
+		public int PivotIndex
+		{
+			get { return _pivotIndex; }
+			set
+			{
+				_pivotIndex = value;
+				NotifyPropertyChanged("PivotIndex");
+			}
+		}
+
+		public Geopoint Center
+		{
+			get
+			{
+				if (_centerPoint == null)
+					Status = "Setting geo location";
+				else
+					Status = "Localization found";
+
+				return _centerPoint;
+			}
+			set
+			{
+				_centerPoint = value;
+				NotifyPropertyChanged("Center");
+			}
+		}
+
+		public string Status
+		{
+			get { return _status; }
+			set
+			{
+				_status = value;
+				NotifyPropertyChanged("Status");
+			}
+		}
+
+		public int Radius
+		{
+			get { return _radius; }
+			set
+			{
+				_radius = value / 10;
+
+				if (_centerPoint != null)
+					GetPhotos();
+
+				NotifyPropertyChanged("Radius");
+			}
+		}
+
+		#endregion
+
+		#region Contructor
+
 		public MainPageViewModel()
 		{
 			//Zoom = LocalizationManager.DefaultZoom;
-			Status = "Start";
+			Status = "Search location...";
 			_localizationManager = new LocalizationManager();
 			Photos = new ObservableCollection<Photo>();
 			FavoritePhotos = new ObservableCollection<Photo>();
-			FavoritePhotos.CollectionChanged += FavoritePhotosOnCollectionChanged;
 			InitializeMapAndPhoto();
-			//ItemClickedCommand = new DelegateCommand<ItemClickEventArgs>(OnItemClicked);
 		}
 
-		//private void OnItemClicked(ItemClickEventArgs obj)
-		//{
-		//	Photo item = obj.ClickedItem as Photo;
-		//	FavoritePhotos.Add(item);
-		//}
+		#endregion
 
-		private void FavoritePhotosOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
-		{
-		}
+		#region Public methods
 
 		public async void InitializeMapAndPhoto()
 		{
 			//Center = LocalizationManager.DefaultLocation;
 			Radius = 1;
 			await GetGeoLocation();
+			Status = "Faund location.";
 			GetPhotos();
 		}
+
+		public void AddFavorite(Uri photoUri)
+		{
+			var photo = Photos.FirstOrDefault(c => c.PhotoUrl == photoUri);
+			if (photo != null)
+			{
+				FavoritePhotos.Add(photo);
+				SavePhotoInIsolatedStorage(photo);
+			}
+		}
+
+		public void DeleteFavorite(Uri uri)
+		{
+			var photo = FavoritePhotos.FirstOrDefault(c => c.PhotoUrl == uri);
+
+			if (photo != null)
+			{
+				FavoritePhotos.Remove(photo);
+				RemovePhotoFormIsolatedStorage(photo);
+			}
+		}
+
+		#endregion
+
+		#region Privete methods
 
 		private async Task GetGeoLocation()
 		{
@@ -82,94 +162,22 @@ namespace FlirckrMobileApp.ViewModel
 
 			if (flickrMain.Stat == PreparedString.ValidStat)
 			{
-				Status = "Connection with server successful";
-
 				foreach (var photo in flickrMain.Photos.Photo)
 				{
 					photo.PhotoUrl = HttpClientManager.GetPhotoUrl(photo);
 					Photos.Add(photo);
+					PivotIndex = 1;
 				}
-
-				Status = "Photos in conllection == " + Photos.Count;
 			}
 			else
-				Status = "Server connection error";
-		}
-
-		public Geopoint Center
-		{
-			get
 			{
-				if (_centerPoint == null)
-					Status = "Setting geo location";
-				else
-					Status = "Localization found";
-
-				return _centerPoint;
-			}
-			set
-			{
-				_centerPoint = value;
-				//Point = value.Position.Latitude + " - " + value.Position.Longitude;
-				NotifyPropertyChanged("Center");
+				Status = "Error while getting photos. Try again later.";
+				PivotIndex = 2;
 			}
 		}
 
-		//public double Zoom
-		//{
-		//	get { return _zoom; }
-		//	set
-		//	{
-		//		_zoom = value;
-		//		NotifyPropertyChanged("Zoom");
-		//	}
-		//}
 
-		public string Status
-		{
-			get { return _status; }
-			set
-			{
-				_status = value;
-				NotifyPropertyChanged("Status");
-			}
-		}
-
-		//public string Point
-		//{
-		//	get { return _point; }
-		//	set
-		//	{
-		//		_point = value;
-		//		NotifyPropertyChanged("Point");
-		//	}
-		//}
-
-		public int Radius
-		{
-			get { return _radius; }
-			set
-			{
-				_radius = value / 10;
-
-				if (_centerPoint != null)
-					GetPhotos();
-
-				NotifyPropertyChanged("Radius");
-			}
-		}
-
-		public void AddFavorite(Uri photoUri)
-		{
-			var photo = Photos.FirstOrDefault(c => c.PhotoUrl == photoUri);
-			if (photo != null)
-			{
-				FavoritePhotos.Add(photo);
-				SavePhotoInIsolatedStorage(photo);
-			}
-		}
-
-		private void SavePhotoInIsolatedStorage(Photo photo)
+		private static void SavePhotoInIsolatedStorage(Photo photo)
 		{
 			ApplicationDataContainer settings = ApplicationData.Current.LocalSettings;
 			string key = photo.Id;
@@ -178,7 +186,7 @@ namespace FlirckrMobileApp.ViewModel
 
 		public void ReadPhotosFromIsolatedStorage()
 		{
-			ClearFavoriteCollection();
+			//ClearFavoriteCollection();
 			ApplicationDataContainer settings = ApplicationData.Current.LocalSettings;
 			if (!settings.Values.Any()) return;
 			{
@@ -193,13 +201,14 @@ namespace FlirckrMobileApp.ViewModel
 			}
 		}
 
-		public void DeleteFavorite(Uri uri)
+		private static void RemovePhotoFormIsolatedStorage(Photo photo)
 		{
-			var photo = FavoritePhotos.FirstOrDefault(c => c.PhotoUrl == uri);
-
-			if (photo != null)
-				FavoritePhotos.Remove(photo);
+			ApplicationDataContainer settings = ApplicationData.Current.LocalSettings;
+			if (settings.Values.ContainsKey(photo.Id))
+				settings.Values.Remove(photo.Id);
 		}
+
+
 
 		private void ClearCollection()
 		{
@@ -220,5 +229,7 @@ namespace FlirckrMobileApp.ViewModel
 				}
 			}
 		}
+
+		#endregion
 	}
 }

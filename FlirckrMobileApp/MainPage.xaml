@@ -13,17 +13,19 @@
 		<helpers:StringFormatConverter x:Name="StringFormat"/>
 	</Page.Resources>
 	<Grid d:DataContext="{d:DesignInstance viewModel:MainPageViewModel}">
-		<Pivot Title="Near to you photos">
+		<Pivot Title="Near to you photos" SelectedIndex="{Binding PivotIndex}">
 			<PivotItem Header="Your location">
 				<Grid>
 					<Grid.RowDefinitions>
 						<RowDefinition Height="75"/>
+						<RowDefinition Height="75"/>
 						<RowDefinition Height="*"/>
-						<RowDefinition Height="50"/>
+						<RowDefinition Height="75"/>
 					</Grid.RowDefinitions>
-					<Slider Value="{Binding Radius, Mode=TwoWay}" StepFrequency="10" Header="{Binding  Path=Radius, Converter={StaticResource ResourceKey=StringFormat}, ConverterParameter='Radius search {0} km'}" />
-					<Maps:MapControl x:Name="MapControl" Grid.Row="1" Center="{Binding Center, Mode=TwoWay}" ZoomLevel="11" />
-					<Button x:Name="RefreshLocation" Content="Reset my location" Click="RefreshLocation_OnClick" Grid.Row="2" HorizontalAlignment="Center"></Button>
+					<TextBlock Text="{Binding Status}"></TextBlock>
+					<Slider Value="{Binding Radius, Mode=TwoWay}" Grid.Row="1" StepFrequency="10" Header="{Binding  Path=Radius, Converter={StaticResource ResourceKey=StringFormat}, ConverterParameter='Radius search {0} km'}" />
+					<Maps:MapControl x:Name="MapControl" Grid.Row="2" Center="{Binding Center, Mode=TwoWay}" ZoomLevel="10" LandmarksVisible="True" />
+					<AppBarButton Label="Get my location" Click="RefreshLocation_OnClick" Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Top" Icon="Map"/>
 				</Grid>
 			</PivotItem>
 			<PivotItem Header="Photos">
@@ -33,7 +35,7 @@
 							<DataTemplate>
 								<Grid>
 									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="2*"/>
+										<!--<ColumnDefinition Width="2*"/>-->
 										<ColumnDefinition Width="*"/>
 									</Grid.ColumnDefinitions>
 									<Grid.RowDefinitions>
